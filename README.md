@@ -1,1 +1,1 @@
-# RAG-Simulator
+A project created to display a visual tool to simulate resource allocation graphs and analyze deadlock scenarios interactively.
