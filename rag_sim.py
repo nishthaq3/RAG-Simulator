@@ -57,7 +57,7 @@ deadlock_cycle = detect_deadlock(rag, process)
 
 pos = {}
 x_pos = 0
-y_gap = 2
+y_gap = 3
 
 
 for i, p in enumerate(process):
@@ -73,7 +73,7 @@ print("Detected Deadlock Cycle:", deadlock_cycle)
 
 fig, ax = plt.subplots(figsize=(12,8))
 nx.draw_networkx_nodes(rag, pos, nodelist=process, node_color="blue", node_size=1200, node_shape="o")
-nx.draw_networkx_nodes(rag, pos, nodelist=resource, node_color="red", node_size=1300, node_shape="s")
+nx.draw_networkx_nodes(rag, pos, nodelist=resource, node_color="red", node_size=700, node_shape="s")
 nx.draw_networkx_labels(rag, pos, font_size=12, font_color="white")
 
 #highlight deadlock cycle
@@ -85,18 +85,20 @@ else:
 
 edge_colors = ["red" if (u, v) in cycle_edges or (v, u) in cycle_edges else "black" for u, v in rag.edges()]
 
-nx.draw_networkx_edges(rag, pos, arrows=True, edge_color="black", width=2,
-                        arrowstyle="-|>", arrowsize=30, connectionstyle="arc3,rad=0.15")
+nx.draw_networkx_edges(rag, pos, edgelist=rag.edges(), edge_color=edge_colors, width=2,
+                        arrowstyle="-|>", arrowsize=25, connectionstyle="arc3,rad=0.1")
+
 
 #print relevant message to deadlock
 if deadlock_cycle:
     print("\n⚠️ Deadlock detected! Involved cycle:", " → ".join(deadlock_cycle))
 else:
     print("\n✅ No deadlock detected.")
-plt.margins(0.2)
+
+plt.margins(0.3)  # Increase margin space
+ax.set_xlim(-2, 7)  # Adjust if needed
+ax.set_ylim(-num_of_process * y_gap - 3, num_of_process * y_gap)
 plt.title("Resource Allocation Graph (RAG)")
 plt.axis("off")
-ax.set_xlim(-2, 7)  # Adjust if needed
-ax.set_ylim(-num_of_process * y_gap - 2, 2)
 plt.show()
 
