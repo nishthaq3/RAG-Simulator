@@ -1,5 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt 
+import matplotlib.patches as patches
 
 #function for deadlock detection
 def detect_deadlock(rag, process):
@@ -63,7 +64,7 @@ y_gap = 3
 for i, p in enumerate(process):
     pos[p] = (x_pos, -i * y_gap)
 
-x_pos = 6.5
+x_pos = 5
 
 for i, r in enumerate(resource):
     pos[r] = (x_pos, -i * y_gap)
@@ -76,18 +77,25 @@ nx.draw_networkx_nodes(rag, pos, nodelist=process, node_color="blue", node_size=
 nx.draw_networkx_nodes(rag, pos, nodelist=resource, node_color="red", node_size=700, node_shape="s")
 nx.draw_networkx_labels(rag, pos, font_size=12, font_color="white")
 
-#highlight deadlock cycle
-if deadlock_cycle:
-    cycle_edges = [(deadlock_cycle[i], deadlock_cycle[i + 1]) for i in range(len(deadlock_cycle) - 1)]
-    cycle_edges.append((deadlock_cycle[-1], deadlock_cycle[0]))  # Close the cycle
-else:
-    cycle_edges = []  # Ensure it's defined even when no deadlock exists
+for u, v in rag.edges():
+    start_pos = pos[u]
+    end_pos = pos[v]
 
-edge_colors = ["red" if (u, v) in cycle_edges or (v, u) in cycle_edges else "black" for u, v in rag.edges()]
+    dx = end_pos[0] - start_pos[0]
+    dy = end_pos[1] - start_pos[1]
+    length = (dx**2 + dy**2)**0.5
+    offset = 0.2
+    end_x = end_pos[0] - (dx / length) * offset
+    end_y = end_pos[1] - (dy / length) * offset
 
-nx.draw_networkx_edges(rag, pos, edgelist=rag.edges(), edge_color=edge_colors, width=2,
-                        arrowstyle="-|>", arrowsize=25, connectionstyle="arc3,rad=0.1")
+    # Determine arrow color based on deadlock
+    if deadlock_cycle and (u, v) in [(deadlock_cycle[i], deadlock_cycle[(i + 1) % len(deadlock_cycle)]) for i in range(len(deadlock_cycle))]:
+        arrow_color = "red"  # Red for deadlock cycle edges
+    else:
+        arrow_color = "black"  # Black for other edges
 
+    arrow = patches.FancyArrowPatch(start_pos, (end_x, end_y), arrowstyle="-|>", mutation_scale=20, color=arrow_color, connectionstyle="arc3,rad=0.1")
+    ax.add_patch(arrow)
 
 #print relevant message to deadlock
 if deadlock_cycle:
@@ -101,4 +109,3 @@ ax.set_ylim(-num_of_process * y_gap - 3, num_of_process * y_gap)
 plt.title("Resource Allocation Graph (RAG)")
 plt.axis("off")
 plt.show()
-
