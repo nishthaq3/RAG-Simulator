@@ -87,7 +87,7 @@ for u, v in rag.edges():
     offset = 0.2
     end_x = end_pos[0] - (dx / length) * offset
     end_y = end_pos[1] - (dy / length) * offset
-
+ 
     # Determine arrow color based on deadlock
     if deadlock_cycle and (u, v) in [(deadlock_cycle[i], deadlock_cycle[(i + 1) % len(deadlock_cycle)]) for i in range(len(deadlock_cycle))]:
         arrow_color = "red"  # Red for deadlock cycle edges
