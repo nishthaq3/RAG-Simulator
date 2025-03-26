@@ -78,4 +78,4 @@ def draw_rag(rag, process, deadlock_cycle, ax):
         arrow = patches.FancyArrowPatch(start_pos, (end_x, end_y), arrowstyle="-|>", mutation_scale=20, color=arrow_color, connectionstyle="arc3,rad=0.1")
         ax.add_patch(arrow)
 
-    return ax
+    return ax #readditon
