@@ -10,9 +10,16 @@ def run_deadlock_detection():
     num_edges = int(edge_entry.get())
 
     edges = []
-    for _ in range(num_edges):
-        p, r = input_text.get("1.0", tk.END).splitlines()[_].split()
-        edges.append((p, r))
+    for line in input_text.get("1.0", tk.END).splitlines():
+        line = line.strip()
+        if line:
+            parts = line.split()
+            if len(parts) == 2:
+                p, r = parts
+                edges.append((p, r))
+            else:
+                output_text.insert(tk.END, f"Invalid edge format: {line}\n")
+                return
 
     rag, process = dd.create_rag(num_processes, num_resources, edges)
     deadlock_cycle = dd.detect_deadlock(rag, process)
@@ -37,10 +44,15 @@ def run_deadlock_detection():
 
     canvas = FigureCanvasTkAgg(fig, master=window)
     canvas.draw()
-    canvas.get_tk_widget().grid(row=6, column=0, columnspan=2)  # Adjust row for graph
+    canvas.get_tk_widget().grid(row=6, column=0, columnspan=2, sticky="nsew") # Added sticky
 
 window = tk.Tk()
 window.title("Deadlock Detection")
+
+# Configure row and column weights
+window.grid_rowconfigure(6, weight=1) # Added weight
+window.grid_columnconfigure(0, weight=1) # Added weight
+window.grid_columnconfigure(1, weight=1) # Added weight
 
 tk.Label(window, text="Number of Processes:").grid(row=0, column=0)
 process_entry = tk.Entry(window)
@@ -61,9 +73,9 @@ input_text.grid(row=3, column=1)
 tk.Button(window, text="Run Detection", command=run_deadlock_detection).grid(row=4, column=0, columnspan=2)
 
 deadlock_label = tk.Label(window, text="", font=("Arial", 12))
-deadlock_label.grid(row=5, column=0, columnspan=2)  # Place above the graph
+deadlock_label.grid(row=5, column=0, columnspan=2)
 
 output_text = scrolledtext.ScrolledText(window, height=10, width=50)
-output_text.grid(row=7, column=0, columnspan=2)  # Adjust row for output
+output_text.grid(row=7, column=0, columnspan=2)
 
 window.mainloop()
