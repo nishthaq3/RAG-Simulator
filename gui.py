@@ -33,8 +33,12 @@ def run_deadlock_detection():
 
     if deadlock_cycle:
         deadlock_label.config(text=f"⚠️ Deadlock detected! Involved cycle: {' → '.join(deadlock_cycle)}", fg="red")
+        resolution_text.delete("1.0", tk.END)
+        resolution_text.insert(tk.END, dd.suggest_deadlock_resolution(deadlock_cycle, rag)) # Use AI-enhanced suggestion
     else:
         deadlock_label.config(text="✅ No deadlock detected.", fg="green")
+        resolution_text.delete("1.0", tk.END)
+        resolution_text.insert(tk.END, "No deadlock detected.")
 
     plt.margins(0.3)
     ax.set_xlim(-2, 8)
@@ -44,15 +48,15 @@ def run_deadlock_detection():
 
     canvas = FigureCanvasTkAgg(fig, master=window)
     canvas.draw()
-    canvas.get_tk_widget().grid(row=6, column=0, columnspan=2, sticky="nsew") # Added sticky
+    canvas.get_tk_widget().grid(row=6, column=0, columnspan=2, sticky="nsew")
 
 window = tk.Tk()
 window.title("Deadlock Detection")
 
 # Configure row and column weights
-window.grid_rowconfigure(6, weight=1) # Added weight
-window.grid_columnconfigure(0, weight=1) # Added weight
-window.grid_columnconfigure(1, weight=1) # Added weight
+window.grid_rowconfigure(6, weight=1)
+window.grid_columnconfigure(0, weight=1)
+window.grid_columnconfigure(1, weight=1)
 
 tk.Label(window, text="Number of Processes:").grid(row=0, column=0)
 process_entry = tk.Entry(window)
@@ -77,5 +81,9 @@ deadlock_label.grid(row=5, column=0, columnspan=2)
 
 output_text = scrolledtext.ScrolledText(window, height=10, width=50)
 output_text.grid(row=7, column=0, columnspan=2)
+
+# Define resolution_text here:
+resolution_text = scrolledtext.ScrolledText(window, height=3, width=50)
+resolution_text.grid(row=8, column=0, columnspan=2)
 
 window.mainloop()

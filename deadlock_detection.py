@@ -1,6 +1,8 @@
 import networkx as nx
 import matplotlib.patches as patches
+import openai
 
+openai.api_key = "PLEASE GIVE YOUR API KEY"
 def detect_deadlock(rag, process):
     def dfs(node, visited, stack, path):
         visited.add(node)
@@ -79,3 +81,39 @@ def draw_rag(rag, process, deadlock_cycle, ax):
         ax.add_patch(arrow)
 
     return ax
+
+def suggest_deadlock_resolution(deadlock_cycle, rag):
+    if not deadlock_cycle:
+        return "No deadlock detected."
+
+    edges_in_cycle = [(deadlock_cycle[i], deadlock_cycle[(i + 1) % len(deadlock_cycle)]) for i in range(len(deadlock_cycle))]
+    edge_to_break = edges_in_cycle[0]  # Default: Break the first edge
+
+    # Simple AI: Prioritize breaking edges involving resources with more requests
+    resource_counts = {}
+    for u, v in rag.edges():
+        if v.startswith("R"):  # If the edge points to a resource
+            resource_counts[v] = resource_counts.get(v, 0) + 1
+
+    best_edge = None
+    best_count = 0
+    for u, v in edges_in_cycle:
+        if v.startswith("R") and resource_counts.get(v, 0) > best_count:
+            best_edge = (u, v)
+            best_count = resource_counts.get(v, 0)
+
+    if best_edge:
+        edge_to_break = best_edge
+
+    # Use LLM to generate human-readable suggestion
+    try:
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=f"Given a deadlock cycle {deadlock_cycle} in a resource allocation graph, suggest a human-readable resolution. For example, 'To prevent deadlock, consider releasing resource R1, currently held by process P1, as this resource is requested by process P2, which is part of a cycle.'",
+            max_tokens=100
+        )
+        llm_suggestion = response.choices[0].text.strip()
+    except Exception as e:
+        llm_suggestion = f"To resolve the deadlock, consider breaking the edge: {edge_to_break[0]} -> {edge_to_break[1]}"
+
+    return llm_suggestion
