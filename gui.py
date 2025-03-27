@@ -51,7 +51,7 @@ def run_deadlock_detection():
     canvas.get_tk_widget().grid(row=6, column=0, columnspan=2, sticky="nsew")
 
 window = tk.Tk()
-window.title("Deadlock Detection")
+window.title("Graphical Simulator")
 
 # Configure row and column weights
 window.grid_rowconfigure(6, weight=1)
@@ -70,11 +70,11 @@ tk.Label(window, text="Number of Edges:").grid(row=2, column=0)
 edge_entry = tk.Entry(window)
 edge_entry.grid(row=2, column=1)
 
-tk.Label(window, text="Edges (Process Resource):").grid(row=3, column=0)
+tk.Label(window, text="Process-Resource request:").grid(row=3, column=0)
 input_text = scrolledtext.ScrolledText(window, height=5, width=30)
 input_text.grid(row=3, column=1)
 
-tk.Button(window, text="Run Detection", command=run_deadlock_detection).grid(row=4, column=0, columnspan=2)
+tk.Button(window, text="Generate Graph", command=run_deadlock_detection).grid(row=4, column=0, columnspan=2)
 
 deadlock_label = tk.Label(window, text="", font=("Arial", 12))
 deadlock_label.grid(row=5, column=0, columnspan=2)
@@ -85,5 +85,20 @@ output_text.grid(row=7, column=0, columnspan=2)
 # Define resolution_text here:
 resolution_text = scrolledtext.ScrolledText(window, height=3, width=50)
 resolution_text.grid(row=8, column=0, columnspan=2)
+
+style = ttk.Style()
+style.theme_use("clam")
+
+window.configure(bg="#E3F2FD")  # Soft sky blue background
+
+style.configure("TLabel", font=("Arial", 12), background="#E3F2FD", foreground="#0D47A1")
+style.configure("TButton", font=("Arial", 11), background="#1976D2", foreground="white", padding=5)
+style.map("TButton", background=[("active", "#42A5F5")])  # Light blue hover
+
+input_text.configure(bg="white", fg="black", insertbackground="black")
+output_text.configure(bg="white", fg="black", insertbackground="black")
+
+deadlock_label.configure(font=("Arial", 12, "bold"), background="#E3F2FD", foreground="#E53935")
+
 
 window.mainloop()
