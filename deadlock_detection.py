@@ -88,12 +88,12 @@ def suggest_deadlock_resolution(deadlock_cycle, rag):
         return "No deadlock detected."
 
     edges_in_cycle = [(deadlock_cycle[i], deadlock_cycle[(i + 1) % len(deadlock_cycle)]) for i in range(len(deadlock_cycle))]
-    edge_to_break = edges_in_cycle[0]  # Default: Break the first edge
+    edge_to_break = edges_in_cycle[0]  
 
-    # Simple AI: Prioritize breaking edges involving resources with more requests
+    #implementation of basic ai
     resource_counts = {}
     for u, v in rag.edges():
-        if v.startswith("R"):  # If the edge points to a resource
+        if v.startswith("R"):  
             resource_counts[v] = resource_counts.get(v, 0) + 1
 
     best_edge = None
@@ -118,7 +118,7 @@ def suggest_deadlock_resolution(deadlock_cycle, rag):
 
     return llm_suggestion
 
-### BANKER'S ALGORITHM ###
+#bankers algo
 def is_safe_state(available, max_demand, allocation):
     num_processes = len(allocation)
     num_resources = len(available)
