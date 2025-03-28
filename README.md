@@ -9,4 +9,4 @@ A project created to display a visual tool to simulate resource allocation graph
 The language of implementation has been chosen as Python as it offers extensive libraries for GUI as well as backend. Libraries like Tkinter, PyQt and networkX has been put to use
 
 ## **CONCLUSION**
-This project has been very challenging yet interesting for us. We hope you enjoy its experience as much as we did making it!>
+This project has been very challenging yet interesting for us. We hope you enjoy its experience as much as we did making it!
