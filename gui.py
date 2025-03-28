@@ -21,24 +21,16 @@ def run_deadlock_detection():
                 output_text.insert(tk.END, f"Invalid edge format: {line}\n")
                 return
 
+    # Create RAG and detect deadlock
     rag, process = dd.create_rag(num_processes, num_resources, edges)
     deadlock_cycle = dd.detect_deadlock(rag, process)
 
+    # Clear previous output
     output_text.delete("1.0", tk.END)
-    output_text.insert(tk.END, f"Edges in graph: {list(rag.edges())}\n")
-    output_text.insert(tk.END, f"Detected Deadlock Cycle: {deadlock_cycle}\n")
 
+    # Draw graph first
     fig, ax = plt.subplots(figsize=(8, 6))
     ax = dd.draw_rag(rag, process, deadlock_cycle, ax)
-
-    if deadlock_cycle:
-        deadlock_label.config(text=f"⚠️ Deadlock detected! Involved cycle: {' → '.join(deadlock_cycle)}", fg="red")
-        resolution_text.delete("1.0", tk.END)
-        resolution_text.insert(tk.END, dd.suggest_deadlock_resolution(deadlock_cycle, rag)) # Use AI-enhanced suggestion
-    else:
-        deadlock_label.config(text="✅ No deadlock detected.", fg="green")
-        resolution_text.delete("1.0", tk.END)
-        resolution_text.insert(tk.END, "No deadlock detected.")
 
     plt.margins(0.3)
     ax.set_xlim(-2, 8)
@@ -46,9 +38,33 @@ def run_deadlock_detection():
     ax.set_title("Resource Allocation Graph (RAG)")
     ax.axis("off")
 
-    canvas = FigureCanvasTkAgg(fig, master=window)
+    # Create frame for graph with black border
+    graph_frame = tk.Frame(window, bd=2, relief="solid")  # Black border
+    graph_frame.grid(row=6, column=0, columnspan=2, sticky="nsew", pady=10)
+
+    canvas = FigureCanvasTkAgg(fig, master=graph_frame)
     canvas.draw()
-    canvas.get_tk_widget().grid(row=6, column=0, columnspan=2, sticky="nsew")
+    canvas.get_tk_widget().pack(fill="both", expand=True)
+
+    # Display edges
+    output_text.insert(tk.END, f"Edges in graph: {list(rag.edges())}\n\n")
+
+    # System state message
+    if deadlock_cycle:
+        deadlock_label.config(text="⚠️ Deadlock detected!", fg="red")
+        output_text.insert(tk.END, "⚠️ System is NOT in a safe state.\n")
+        output_text.insert(tk.END, f"⚠️ Deadlock detected in cycle: {' → '.join(deadlock_cycle)}\n")
+    else:
+        deadlock_label.config(text="✅ No deadlock detected.", fg="green")
+        output_text.insert(tk.END, "✅ System is in a safe state.\n")
+        output_text.insert(tk.END, "✅ No deadlock detected.\n")
+
+    # Deadlock resolution (if applicable)
+    resolution_text.delete("1.0", tk.END)
+    if deadlock_cycle:
+        resolution_text.insert(tk.END, dd.suggest_deadlock_resolution(deadlock_cycle, rag))
+    else:
+        resolution_text.insert(tk.END, "No deadlock detected.")
 
 window = tk.Tk()
 window.title("Graphical Simulator")
@@ -59,19 +75,19 @@ window.grid_columnconfigure(0, weight=1)
 window.grid_columnconfigure(1, weight=1)
 
 tk.Label(window, text="Number of Processes:").grid(row=0, column=0)
-process_entry = tk.Entry(window)
+process_entry = tk.Entry(window, bd=2, relief="solid")  # Black border
 process_entry.grid(row=0, column=1)
 
 tk.Label(window, text="Number of Resources:").grid(row=1, column=0)
-resource_entry = tk.Entry(window)
+resource_entry = tk.Entry(window, bd=2, relief="solid")  # Black border
 resource_entry.grid(row=1, column=1)
 
 tk.Label(window, text="Number of Edges:").grid(row=2, column=0)
-edge_entry = tk.Entry(window)
+edge_entry = tk.Entry(window, bd=2, relief="solid")  # Black border
 edge_entry.grid(row=2, column=1)
 
 tk.Label(window, text="Process-Resource request:").grid(row=3, column=0)
-input_text = scrolledtext.ScrolledText(window, height=5, width=30)
+input_text = scrolledtext.ScrolledText(window, height=5, width=30, bd=2, relief="solid")  # Black border
 input_text.grid(row=3, column=1)
 
 tk.Button(window, text="Generate Graph", command=run_deadlock_detection).grid(row=4, column=0, columnspan=2)
@@ -79,11 +95,10 @@ tk.Button(window, text="Generate Graph", command=run_deadlock_detection).grid(ro
 deadlock_label = tk.Label(window, text="", font=("Arial", 12))
 deadlock_label.grid(row=5, column=0, columnspan=2)
 
-output_text = scrolledtext.ScrolledText(window, height=10, width=50)
+output_text = scrolledtext.ScrolledText(window, height=10, width=50, bd=2, relief="solid")  # Black border
 output_text.grid(row=7, column=0, columnspan=2)
 
-# Define resolution_text here:
-resolution_text = scrolledtext.ScrolledText(window, height=3, width=50)
+resolution_text = scrolledtext.ScrolledText(window, height=3, width=50, bd=2, relief="solid")  # Black border
 resolution_text.grid(row=8, column=0, columnspan=2)
 
 style = ttk.Style()
@@ -99,6 +114,5 @@ input_text.configure(bg="white", fg="black", insertbackground="black")
 output_text.configure(bg="white", fg="black", insertbackground="black")
 
 deadlock_label.configure(font=("Arial", 12, "bold"), background="#E3F2FD", foreground="#E53935")
-
 
 window.mainloop()

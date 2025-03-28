@@ -3,6 +3,7 @@ import matplotlib.patches as patches
 import openai
 
 openai.api_key = "PLEASE GIVE YOUR API KEY"
+
 def detect_deadlock(rag, process):
     def dfs(node, visited, stack, path):
         visited.add(node)
@@ -105,11 +106,10 @@ def suggest_deadlock_resolution(deadlock_cycle, rag):
     if best_edge:
         edge_to_break = best_edge
 
-    # Use LLM to generate human-readable suggestion
     try:
         response = openai.Completion.create(
             engine="text-davinci-003",
-            prompt=f"Given a deadlock cycle {deadlock_cycle} in a resource allocation graph, suggest a human-readable resolution. For example, 'To prevent deadlock, consider releasing resource R1, currently held by process P1, as this resource is requested by process P2, which is part of a cycle.'",
+            prompt=f"Given a deadlock cycle {deadlock_cycle} in a resource allocation graph, suggest a human-readable resolution.",
             max_tokens=100
         )
         llm_suggestion = response.choices[0].text.strip()
@@ -117,3 +117,28 @@ def suggest_deadlock_resolution(deadlock_cycle, rag):
         llm_suggestion = f"To resolve the deadlock, consider breaking the edge: {edge_to_break[0]} -> {edge_to_break[1]}"
 
     return llm_suggestion
+
+### BANKER'S ALGORITHM ###
+def is_safe_state(available, max_demand, allocation):
+    num_processes = len(allocation)
+    num_resources = len(available)
+
+    need = [[max_demand[i][j] - allocation[i][j] for j in range(num_resources)] for i in range(num_processes)]
+    finish = [False] * num_processes
+    work = available[:]
+    safe_sequence = []
+
+    while len(safe_sequence) < num_processes:
+        allocated = False
+        for i in range(num_processes):
+            if not finish[i] and all(need[i][j] <= work[j] for j in range(num_resources)):
+                safe_sequence.append(f"P{i+1}")
+                work = [work[j] + allocation[i][j] for j in range(num_resources)]
+                finish[i] = True
+                allocated = True
+                break
+        
+        if not allocated:
+            return False, []
+
+    return True, safe_sequence
