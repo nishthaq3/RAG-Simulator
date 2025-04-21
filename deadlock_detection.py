@@ -2,7 +2,7 @@ import networkx as nx
 import matplotlib.patches as patches
 import openai
 
-openai.api_key = "PLEASE GIVE YOUR API KEY"
+openai.api_key = "Your API"
 
 def detect_deadlock(rag, process):
     def dfs(node, visited, stack, path):
@@ -118,27 +118,3 @@ def suggest_deadlock_resolution(deadlock_cycle, rag):
 
     return llm_suggestion
 
-#bankers algo
-def is_safe_state(available, max_demand, allocation):
-    num_processes = len(allocation)
-    num_resources = len(available)
-
-    need = [[max_demand[i][j] - allocation[i][j] for j in range(num_resources)] for i in range(num_processes)]
-    finish = [False] * num_processes
-    work = available[:]
-    safe_sequence = []
-
-    while len(safe_sequence) < num_processes:
-        allocated = False
-        for i in range(num_processes):
-            if not finish[i] and all(need[i][j] <= work[j] for j in range(num_resources)):
-                safe_sequence.append(f"P{i+1}")
-                work = [work[j] + allocation[i][j] for j in range(num_resources)]
-                finish[i] = True
-                allocated = True
-                break
-        
-        if not allocated:
-            return False, []
-
-    return True, safe_sequence

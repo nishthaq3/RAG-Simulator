@@ -7,10 +7,11 @@ import deadlock_detection as dd
 def run_deadlock_detection():
     num_processes = int(process_entry.get())
     num_resources = int(resource_entry.get())
-    num_edges = int(edge_entry.get())
+    num_expected_edges = int(edge_entry.get())  # Get the expected number of edges
 
     edges = []
-    for line in input_text.get("1.0", tk.END).splitlines():
+    edge_lines = input_text.get("1.0", tk.END).splitlines()
+    for line in edge_lines:
         line = line.strip()
         if line:
             parts = line.split()
@@ -21,14 +22,19 @@ def run_deadlock_detection():
                 output_text.insert(tk.END, f"Invalid edge format: {line}\n")
                 return
 
-   #RAG creation
+    num_actual_edges = len(edges)  # Count the actual number of valid edges entered
+
+    if num_actual_edges != num_expected_edges:
+        output_text.delete("1.0", tk.END)
+        output_text.insert(tk.END, "⚠️ Error: The number of edges entered does not match the 'Number of Edges' specified.\n")
+        output_text.insert(tk.END, f"Expected: {num_expected_edges}, Actual: {num_actual_edges}\n")
+        return  # Stop the function if the number of edges doesn't match
+
     rag, process = dd.create_rag(num_processes, num_resources, edges)
     deadlock_cycle = dd.detect_deadlock(rag, process)
 
-    
     output_text.delete("1.0", tk.END)
 
- 
     fig, ax = plt.subplots(figsize=(8, 6))
     ax = dd.draw_rag(rag, process, deadlock_cycle, ax)
 
@@ -38,18 +44,15 @@ def run_deadlock_detection():
     ax.set_title("Resource Allocation Graph (RAG)")
     ax.axis("off")
 
-    
-    graph_frame = tk.Frame(window, bd=2, relief="solid")  
+    graph_frame = tk.Frame(window, bd=2, relief="solid")
     graph_frame.grid(row=6, column=0, columnspan=2, sticky="nsew", pady=10)
 
     canvas = FigureCanvasTkAgg(fig, master=graph_frame)
     canvas.draw()
     canvas.get_tk_widget().pack(fill="both", expand=True)
 
-    
     output_text.insert(tk.END, f"Edges in graph: {list(rag.edges())}\n\n")
 
-    
     if deadlock_cycle:
         deadlock_label.config(text="⚠️ Deadlock detected!", foreground="red")
         output_text.insert(tk.END, "⚠️ System is NOT in a safe state.\n")
@@ -59,14 +62,12 @@ def run_deadlock_detection():
         output_text.insert(tk.END, "✅ System is in a safe state.\n")
         output_text.insert(tk.END, "✅ No deadlock detected.\n")
 
-    
     resolution_text.delete("1.0", tk.END)
     if deadlock_cycle:
         resolution_text.insert(tk.END, dd.suggest_deadlock_resolution(deadlock_cycle, rag))
     else:
         resolution_text.insert(tk.END, "No deadlock detected.")
 
-#styling and GUI
 window = tk.Tk()
 window.title("Graphical Simulator")
 
