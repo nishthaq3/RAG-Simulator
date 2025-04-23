@@ -1,8 +1,10 @@
 import tkinter as tk
-from tkinter import ttk, scrolledtext
+from tkinter import ttk, scrolledtext, filedialog
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import deadlock_detection as dd
+import pyscreenshot as ImageGrab  # Import the screenshot library
+import os
 
 def run_deadlock_detection():
     num_processes = int(process_entry.get())
@@ -44,6 +46,9 @@ def run_deadlock_detection():
     ax.set_title("Resource Allocation Graph (RAG)")
     ax.axis("off")
 
+    global canvas, graph_frame  # Ensure graph_frame is accessible
+    if graph_frame:
+        graph_frame.destroy()
     graph_frame = tk.Frame(window, bd=2, relief="solid")
     graph_frame.grid(row=6, column=0, columnspan=2, sticky="nsew", pady=10)
 
@@ -68,28 +73,51 @@ def run_deadlock_detection():
     else:
         resolution_text.insert(tk.END, "No deadlock detected.")
 
+def take_screenshot():
+    try:
+        # Get the coordinates of the main window
+        x = window.winfo_rootx()
+        y = window.winfo_rooty()
+        width = window.winfo_width()
+        height = window.winfo_height()
+
+        # Capture the screenshot of the window
+        screenshot = ImageGrab.grab(bbox=(x, y, x + width, y + height))
+
+        # Open a file dialog to ask the user where to save the image
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
+            title="Save Screenshot As"
+        )
+
+        if file_path:
+            screenshot.save(file_path)
+            output_text.insert(tk.END, f"Screenshot saved to: {file_path}\n")
+    except Exception as e:
+        output_text.insert(tk.END, f"Error taking screenshot: {e}\n")
+
 window = tk.Tk()
 window.title("Graphical Simulator")
-
 
 window.grid_rowconfigure(6, weight=1)
 window.grid_columnconfigure(0, weight=1)
 window.grid_columnconfigure(1, weight=1)
 
 tk.Label(window, text="Number of Processes:").grid(row=0, column=0)
-process_entry = tk.Entry(window, bd=2, relief="solid")  
+process_entry = tk.Entry(window, bd=2, relief="solid")
 process_entry.grid(row=0, column=1)
 
 tk.Label(window, text="Number of Resources:").grid(row=1, column=0)
-resource_entry = tk.Entry(window, bd=2, relief="solid")  
+resource_entry = tk.Entry(window, bd=2, relief="solid")
 resource_entry.grid(row=1, column=1)
 
 tk.Label(window, text="Number of Edges:").grid(row=2, column=0)
-edge_entry = tk.Entry(window, bd=2, relief="solid")  
+edge_entry = tk.Entry(window, bd=2, relief="solid")
 edge_entry.grid(row=2, column=1)
 
 tk.Label(window, text="Process-Resource request:").grid(row=3, column=0)
-input_text = scrolledtext.ScrolledText(window, height=5, width=30, bd=2, relief="solid")  
+input_text = scrolledtext.ScrolledText(window, height=5, width=30, bd=2, relief="solid")
 input_text.grid(row=3, column=1)
 
 tk.Button(window, text="Generate Graph", command=run_deadlock_detection).grid(row=4, column=0, columnspan=2)
@@ -97,20 +125,27 @@ tk.Button(window, text="Generate Graph", command=run_deadlock_detection).grid(ro
 deadlock_label = ttk.Label(window, text="", font=("Arial", 12))
 deadlock_label.grid(row=5, column=0, columnspan=2)
 
-output_text = scrolledtext.ScrolledText(window, height=10, width=50, bd=2, relief="solid")  
+graph_frame = tk.Frame(window, bd=2, relief="solid")
+graph_frame.grid(row=6, column=0, columnspan=2, sticky="nsew", pady=10)
+
+output_text = scrolledtext.ScrolledText(window, height=10, width=50, bd=2, relief="solid")
 output_text.grid(row=7, column=0, columnspan=2)
 
-resolution_text = scrolledtext.ScrolledText(window, height=3, width=50, bd=2, relief="solid")  
+resolution_text = scrolledtext.ScrolledText(window, height=3, width=50, bd=2, relief="solid")
 resolution_text.grid(row=8, column=0, columnspan=2)
+
+# --- New "Screenshot" Button ---
+screenshot_button = ttk.Button(window, text="Save Screenshot", command=take_screenshot)
+screenshot_button.grid(row=9, column=0, columnspan=2, pady=10)
 
 style = ttk.Style()
 style.theme_use("clam")
 
-window.configure(bg="#E3F2FD") 
+window.configure(bg="#E3F2FD")
 
 style.configure("TLabel", font=("Arial", 12), background="#E3F2FD", foreground="#0D47A1")
 style.configure("TButton", font=("Arial", 11), background="#1976D2", foreground="white", padding=5)
-style.map("TButton", background=[("active", "#42A5F5")])  
+style.map("TButton", background=[("active", "#42A5F5")])
 
 input_text.configure(bg="white", fg="black", insertbackground="black")
 output_text.configure(bg="white", fg="black", insertbackground="black")
@@ -144,6 +179,7 @@ def show_main_page():
     deadlock_label = ttk.Label(window, text="", font=("Arial", 12))
     deadlock_label.grid(row=5, column=0, columnspan=2)
 
+    global graph_frame  # Declare graph_frame as global here as well
     graph_frame = tk.Frame(window, bd=2, relief="solid")
     graph_frame.grid(row=6, column=0, columnspan=2, sticky="nsew", pady=10)
 
@@ -152,6 +188,10 @@ def show_main_page():
 
     resolution_text = scrolledtext.ScrolledText(window, height=3, width=50, bd=2, relief="solid")
     resolution_text.grid(row=8, column=0, columnspan=2)
+
+    # --- New "Screenshot" Button ---
+    screenshot_button = ttk.Button(window, text="Save Screenshot", command=take_screenshot)
+    screenshot_button.grid(row=9, column=0, columnspan=2, pady=10)
 
     style = ttk.Style()
     style.theme_use("clam")
